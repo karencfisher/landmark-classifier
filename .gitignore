@@ -1,0 +1,5 @@
+.pytest_cache/
+.vscode/
+landmark_images/
+__pycache__/
+mean_and_std.pt
