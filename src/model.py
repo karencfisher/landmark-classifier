@@ -38,8 +38,7 @@ class MyModel(nn.Module):
                 ('relu1', nn.ReLU()),
                 ('fc2', nn.Linear(4096, 4096)),
                 ('relu2', nn.ReLU()),
-                ('fc3', nn.Linear(4096, num_classes)),
-                ('logsoftmax', nn.LogSoftmax(dim=1))
+                ('fc3', nn.Linear(4096, num_classes))
             ])
         )
 
