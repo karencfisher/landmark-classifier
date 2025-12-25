@@ -10,8 +10,33 @@ import torchvision.transforms as T
 from .helpers import get_data_location
 
 
-class Predictor(nn.Module):
+class ResizeBySmallest(nn.Module):
+    """Resize image to 256 on shortest dimension to retain aspect ratio"""
+    def __init__(self):
+        super().__init__()
+        
+    def _get_w_h(self, w, h):
+        if w < h:
+            new_w = 256
+            new_h = int(h * (256 / w))
+        else:
+            new_h = 256
+            new_w = int(w * (256 / h))
+        return new_w, new_h
+    
+    def forward(self, img):
+        if img.dim() == 3:  # CHW
+            _, h, w = img.shape
+            new_w, new_h = self._get_w_h(w, h)
+            return F.interpolate(img.unsqueeze(0), size=(new_h, new_w), mode='bilinear', align_corners=False).squeeze(0)
+        elif img.dim() == 4:  # BCHW
+            _, _, h, w = img.shape
+            new_w, new_h = self._get_w_h(w, h)
+            return F.interpolate(img, size=(new_h, new_w), mode='bilinear', align_corners=False)
+        else:
+            raise ValueError(f"Unsupported tensor shape: {img.shape}")
 
+class Predictor(nn.Module):
     def __init__(self, model, class_names, mean, std):
         super().__init__()
 
@@ -21,21 +46,21 @@ class Predictor(nn.Module):
         # We use nn.Sequential and not nn.Compose because the former
         # is compatible with torch.script, while the latter isn't
         self.transforms = nn.Sequential(
-            T.Resize([256, ]),  # We use single int value inside a list due to torchscript type restrictions
+            # T.Resize([256, ]),  # We use single int value inside a list due to torchscript type restrictions
+            ResizeBySmallest(),  # proportionate resizing
             T.CenterCrop(224),
-            T.ConvertImageDtype(torch.float),
             T.Normalize(mean.tolist(), std.tolist())
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         with torch.no_grad():
             # 1. apply transforms
-            x  = # YOUR CODE HERE
+            x  = self.transforms(x)
             # 2. get the logits
-            x  = # YOUR CODE HERE
+            x  = self.model(x)
             # 3. apply softmax
             #    HINT: remmeber to apply softmax across dim=1
-            x  = # YOUR CODE HERE
+            x  = F.softmax(x, dim=1)
 
             return x
 
