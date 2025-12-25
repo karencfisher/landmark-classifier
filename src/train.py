@@ -5,7 +5,7 @@ import numpy as np
 from livelossplot import PlotLosses
 from livelossplot.outputs import MatplotlibPlot
 from tqdm import tqdm
-from src.helpers import after_subplot
+from src.helpers import after_subplot, timer
 
 
 def train_one_epoch(train_dataloader, model, optimizer, loss):
@@ -87,6 +87,7 @@ def valid_one_epoch(valid_dataloader, model, loss):
     return valid_loss
 
 
+@timer
 def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, interactive_tracking=False):
     # initialize tracker for minimum validation loss
     if interactive_tracking:

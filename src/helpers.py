@@ -8,14 +8,27 @@ from torchvision import datasets, transforms
 from tqdm import tqdm
 import multiprocessing
 import matplotlib.pyplot as plt
-
-
-# Let's see if we have an available GPU
 import numpy as np
 import random
+from time import time
 
+
+def timer(func):
+    # Decorator to time a function
+    def wrapper_func(*args, **kwargs):
+        start_time = time()
+        result = func(*args, **kwargs)
+        elapsed_time = time() - start_time
+        hours = int(elapsed_time // 3600)
+        elapsed_time %= 3600
+        minutes = int(elapsed_time // 60)
+        seconds = elapsed_time % 60
+        print(f'Time taken: {hours:02d}:{minutes:02d}:{seconds:06.3f}')
+        return result
+    return wrapper_func
 
 def setup_env():
+    # Let's see if we have an available GPU
     use_cuda = torch.cuda.is_available()
 
     if use_cuda:
