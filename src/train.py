@@ -34,9 +34,9 @@ def train_one_epoch(train_dataloader, model, optimizer, loss):
         # 1. clear the gradients of all optimized variables
         optimizer.zero_grad()
         # 2. forward pass: compute predicted outputs by passing inputs to the model
-        output  = model(data)
+        output = model(data)
         # 3. calculate the loss
-        loss_value  = loss(output, target)
+        loss_value = loss(output, target)
         # 4. backward pass: compute gradient of the loss with respect to model parameters
         loss_value.backward()
         # 5. perform a single optimization step (parameter update)
@@ -45,6 +45,18 @@ def train_one_epoch(train_dataloader, model, optimizer, loss):
         train_loss = train_loss + (
             (1 / (batch_idx + 1)) * (loss_value.data.item() - train_loss)
         )
+
+        # # Debugging: Check model output and gradients
+        # if batch_idx == 0:  # Only print for the first batch
+        #     print("Logits:", output)
+        #     print("Logits shape:", output.shape)
+        #     print("Labels:", target)
+
+        # for name, param in model.named_parameters():
+        #     if param.grad is None:
+        #         print(f"No gradient for {name}")
+        #     else:
+        #         print(f"Gradient for {name}: {param.grad.abs().mean().item()}")
 
     return train_loss
 
@@ -103,7 +115,7 @@ def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, interact
     # plateau
     # HINT: look here: 
     # https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate
-    scheduler  = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=3)
+    scheduler  = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
     for epoch in range(1, n_epochs + 1):
 
@@ -132,7 +144,7 @@ def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, interact
             valid_loss_min = valid_loss
 
         # Update learning rate, i.e., make a step in the learning rate scheduler
-        scheduler.step(valid_loss)
+        scheduler.step()
 
         # Log the losses and the current learning rate
         if interactive_tracking:
