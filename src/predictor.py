@@ -7,6 +7,7 @@ import torch.nn.functional as F
 from tqdm import tqdm
 from torchvision import datasets
 import torchvision.transforms as T
+from typing import Tuple
 from .helpers import get_data_location
 
 
@@ -15,7 +16,7 @@ class ResizeBySmallest(nn.Module):
     def __init__(self):
         super().__init__()
         
-    def _get_w_h(self, w, h):
+    def _get_w_h(self, w: int, h: int) -> Tuple[int, int]:
         if w < h:
             new_w = 256
             new_h = int(h * (256 / w))
@@ -24,7 +25,7 @@ class ResizeBySmallest(nn.Module):
             new_w = int(w * (256 / h))
         return new_w, new_h
     
-    def forward(self, img):
+    def forward(self, img: torch.Tensor) -> torch.Tensor:
         if img.dim() == 3:  # CHW
             _, h, w = img.shape
             new_w, new_h = self._get_w_h(w, h)

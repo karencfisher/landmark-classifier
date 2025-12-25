@@ -3,3 +3,5 @@
 landmark_images/
 __pycache__/
 mean_and_std.pt
+*.pt
+*.pth
