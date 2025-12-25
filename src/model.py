@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 
 # define the CNN architecture
+# make consistent convolutional blocks as in VGG architecture
 class ConvBlock(nn.Module):
     def __init__(self, num_conv_layers, input_channels, output_channels):
         super().__init__()
