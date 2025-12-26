@@ -21,7 +21,7 @@ class MyModel(nn.Module):
         self.pool3 = nn.MaxPool2d(2, 2) #23
                 
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(33856, 1024)
+        self.fc1 = nn.Linear(43264, 1024)
         self.relu1 = nn.ReLU()
         self.fc2 = nn.Linear(1024, 512)
         self.relu2 = nn.ReLU()
