@@ -31,9 +31,10 @@ class MyModel(nn.Module):
         # YOUR CODE HERE: process the input tensor through the
         # feature extractor, the pooling and the final linear
         # layers (if appropriate for the architecture chosen)
+        x = self.pool1(self.relu1(self.conv1(x)))
+        x = self.pool2(self.relu2(self.conv2(x)))
+        x = self.pool3(self.relu3(self.conv3(x)))
         
-
-        x = self.global_pool(x)
         x = self.flatten(x)
         x = self.relu1(self.fc1(x))
         x = self.relu2(self.fc2(x))
