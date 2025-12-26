@@ -1,11 +1,10 @@
 import tempfile
 
 import torch
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 import numpy as np
-from livelossplot import PlotLosses
-from livelossplot.outputs import MatplotlibPlot
 from tqdm import tqdm
-from src.helpers import after_subplot, timer
+from src.helpers import timer
 
 
 def train_one_epoch(train_dataloader, model, optimizer, loss):
@@ -16,8 +15,7 @@ def train_one_epoch(train_dataloader, model, optimizer, loss):
     if torch.cuda.is_available():
         model.cuda()
 
-    model.train()
-    
+    model.train() 
     train_loss = 0.0
 
     for batch_idx, (data, target) in tqdm(
@@ -45,19 +43,6 @@ def train_one_epoch(train_dataloader, model, optimizer, loss):
         train_loss = train_loss + (
             (1 / (batch_idx + 1)) * (loss_value.data.item() - train_loss)
         )
-
-        # # Debugging: Check model output and gradients
-        # if batch_idx == 0:  # Only print for the first batch
-        #     print("Logits:", output)
-        #     print("Logits shape:", output.shape)
-        #     print("Labels:", target)
-
-        # for name, param in model.named_parameters():
-        #     if param.grad is None:
-        #         print(f"No gradient for {name}")
-        #     else:
-        #         print(f"Gradient for {name}: {param.grad.abs().mean().item()}")
-
     return train_loss
 
 
@@ -65,7 +50,6 @@ def valid_one_epoch(valid_dataloader, model, loss):
     """
     Validate at the end of one epoch
     """
-
     with torch.no_grad():
 
         # set the model to evaluation mode
@@ -95,18 +79,14 @@ def valid_one_epoch(valid_dataloader, model, loss):
             valid_loss = valid_loss + (
                 (1 / (batch_idx + 1)) * (loss_value.data.item() - valid_loss)
             )
-
+            
     return valid_loss
 
 
 @timer
-def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, interactive_tracking=False):
+def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, scheduler=None):
+    # Removed livelossplot stuff -- I won't use it
     # initialize tracker for minimum validation loss
-    if interactive_tracking:
-        liveloss = PlotLosses(outputs=[MatplotlibPlot(after_subplot=after_subplot)])
-    else:
-        liveloss = None
-
     valid_loss_min = None
     logs = {}
 
@@ -115,7 +95,7 @@ def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, interact
     # plateau
     # HINT: look here: 
     # https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate
-    scheduler  = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
+    # Passing to function now
 
     train_losses = []
     valid_losses = []
@@ -129,15 +109,18 @@ def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, interact
 
         # print training/validation statistics
         print(
-            "Epoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}".format(
+            "\nEpoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}".format(
                 epoch, train_loss, valid_loss
             )
         )
 
-        # If the validation loss decreases by more than 1%, save the model
-        if valid_loss_min is None or (
-                (valid_loss_min - valid_loss) / valid_loss_min > 0.01
-        ):
+        # If the validation loss decreases by more than 1% or
+        # If last epoch and valid_loss is least save the final weights
+        # Save the model
+        if  valid_loss_min is None or \
+            ((valid_loss_min - valid_loss) / valid_loss_min > 0.01) or \
+            (epoch == n_epochs and valid_loss < valid_loss_min):
+                
             print(f"New minimum validation loss: {valid_loss:.6f}. Saving model ...")
 
             # Save the weights to save_path
@@ -146,17 +129,13 @@ def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, interact
             valid_loss_min = valid_loss
 
         # Update learning rate, i.e., make a step in the learning rate scheduler
-        scheduler.step()
+        if scheduler is not None:
+            if isinstance(ReduceLROnPlateau, scheduler):
+                scheduler.step(valid_loss)
+            else:
+                scheduler.step()
 
         # Log the losses and the current learning rate
-        if interactive_tracking:
-            logs["loss"] = train_loss
-            logs["val_loss"] = valid_loss
-            logs["lr"] = optimizer.param_groups[0]["lr"]
-
-            liveloss.update(logs)
-            liveloss.send()
-            
         train_losses.append(train_loss)
         valid_losses.append(valid_loss)
     return train_losses, valid_losses
@@ -209,7 +188,7 @@ def one_epoch_test(test_dataloader, model, loss):
     print('\nTest Accuracy: %2d%% (%2d/%2d)' % (
         100. * correct / total, correct, total))
 
-    return test_loss
+    return test_loss, correct / total
 
 
     
@@ -265,5 +244,5 @@ def test_one_epoch_test(data_loaders, optim_objects):
 
     model, loss, optimizer = optim_objects
 
-    tv = one_epoch_test(data_loaders["test"], model, loss)
+    tv, _ = one_epoch_test(data_loaders["test"], model, loss)
     assert not np.isnan(tv), "Test loss is nan"
