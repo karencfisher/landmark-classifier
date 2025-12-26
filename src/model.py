@@ -29,12 +29,12 @@ class MyModel(nn.Module):
         self.convblock2 = ConvBlock(64, 128)
         self.convblock3 = ConvBlock(128, 256)
                 
-        self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(200704, 4096)
+        self.global_pool = nn.AdaptiveAvgPool2d((1,1))
+        self.fc1 = nn.Linear(256, 128)
         self.relu1 = nn.ReLU()
-        self.fc2 = nn.Linear(4096, 4096)
+        self.fc2 = nn.Linear(128, 64)
         self.relu2 = nn.ReLU()
-        self.fc3 = nn.Linear(4096, num_classes)
+        self.fc3 = nn.Linear(64, num_classes)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # YOUR CODE HERE: process the input tensor through the
@@ -44,7 +44,7 @@ class MyModel(nn.Module):
         x = self.convblock2(x)
         x = self.convblock3(x)
 
-        x = self.flatten(x)
+        x = self.global_pool(x)
         x = self.relu1(self.fc1(x))
         x = self.relu2(self.fc2(x))
         return self.fc3(x)
