@@ -12,21 +12,20 @@ class MyModel(nn.Module):
 
         self.conv1 = nn.Conv2d(3, 16, 3, 1)
         self.relu1 = nn.ReLU()
-        self.pool1 = nn.MaxPool2d(2, 2)
+        self.pool1 = nn.MaxPool2d(2, 2) #111
         self.conv2 = nn.Conv2d(16, 32, 3, 1)
         self.relu2 = nn.ReLU()
-        self.pool2 = nn.MaxPool2d(2, 2)
+        self.pool2 = nn.MaxPool2d(2, 2) #49
         self.conv3 = nn.Conv2d(32, 64, 3, 1)
         self.relu3 = nn.ReLU()
-        self.pool3 = nn.MaxPool2d(2, 2)
+        self.pool3 = nn.MaxPool2d(2, 2) #23
                 
-        self.global_pool = nn.AdaptiveAvgPool2d((1,1))
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(256, 128)
+        self.fc1 = nn.Linear(33856, 1024)
         self.relu1 = nn.ReLU()
-        self.fc2 = nn.Linear(128, 64)
+        self.fc2 = nn.Linear(1024, 512)
         self.relu2 = nn.ReLU()
-        self.fc3 = nn.Linear(64, num_classes)
+        self.fc3 = nn.Linear(512, num_classes)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # YOUR CODE HERE: process the input tensor through the
