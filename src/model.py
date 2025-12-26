@@ -25,17 +25,17 @@ class MyModel(nn.Module):
     def __init__(self, num_classes: int = 1000, dropout: float = 0.7) -> None:
         super().__init__()
 
-        self.convblock1 = ConvBlock(3, 64)
-        self.convblock2 = ConvBlock(64, 128)
-        self.convblock3 = ConvBlock(128, 256)
+        self.convblock1 = ConvBlock(3, 16)
+        self.convblock2 = ConvBlock(16, 32)
+        self.convblock3 = ConvBlock(32, 64)
                 
         self.global_pool = nn.AdaptiveAvgPool2d((1,1))
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(256, 128)
+        self.fc1 = nn.Linear(64, 32)
         self.relu1 = nn.ReLU()
-        self.fc2 = nn.Linear(128, 64)
+        self.fc2 = nn.Linear(32, 16)
         self.relu2 = nn.ReLU()
-        self.fc3 = nn.Linear(64, num_classes)
+        self.fc3 = nn.Linear(16, num_classes)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # YOUR CODE HERE: process the input tensor through the
