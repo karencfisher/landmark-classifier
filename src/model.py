@@ -30,6 +30,7 @@ class MyModel(nn.Module):
         self.convblock3 = ConvBlock(128, 256)
                 
         self.global_pool = nn.AdaptiveAvgPool2d((1,1))
+        self.flatten = nn.Flatten()
         self.fc1 = nn.Linear(256, 128)
         self.relu1 = nn.ReLU()
         self.fc2 = nn.Linear(128, 64)
@@ -45,22 +46,10 @@ class MyModel(nn.Module):
         x = self.convblock3(x)
 
         x = self.global_pool(x)
+        x = self.flatten(x, 1)
         x = self.relu1(self.fc1(x))
         x = self.relu2(self.fc2(x))
         return self.fc3(x)
-
-# class MyModel(nn.Module):
-#     def __init__(self, num_classes, dropout=0):
-#         super(MyModel, self).__init__()
-#         self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1)
-#         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-#         self.fc1 = nn.Linear(16 * 112 * 112, num_classes)  # Adjust based on input size
-
-#     def forward(self, x):
-#         x = self.pool(nn.ReLU()(self.conv1(x)))
-#         x = x.view(x.size(0), -1)  # Flatten
-#         x = self.fc1(x)
-#         return x
 
 
 ######################################################################################
