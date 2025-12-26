@@ -4,46 +4,35 @@ import torch.nn as nn
 
 # define the CNN architecture
 # make consistent convolutional blocks as in VGG architecture
-class ConvBlock(nn.Module):
-    def __init__(self, input_channels, output_channels):
-        super().__init__()
-        
-        self.conv1 = nn.Conv2d(input_channels, output_channels, 3, 1, 1)
-        self.relu1 = nn.ReLU()
-        self.conv2 = nn.Conv2d(output_channels, output_channels, 3, 1, 1)
-        self.relu2 = nn.ReLU()
-        self.pool = nn.MaxPool2d(2, 2)
-        
-    def forward(self, x):
-        x = self.relu1(self.conv1(x))
-        x = self.relu2(self.conv2(x))
-
-        return self.pool(x)
-    
+   
         
 class MyModel(nn.Module):
     def __init__(self, num_classes: int = 1000, dropout: float = 0.7) -> None:
         super().__init__()
 
-        self.convblock1 = ConvBlock(3, 16)
-        self.convblock2 = ConvBlock(16, 32)
-        self.convblock3 = ConvBlock(32, 64)
+        self.conv1 = nn.Conv2d(3, 16, 3, 1)
+        self.relu1 = nn.ReLU()
+        self.pool1 = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(16, 32, 3, 1)
+        self.relu2 = nn.ReLU()
+        self.pool2 = nn.MaxPool2d(2, 2)
+        self.conv3 = nn.Conv2d(32, 64, 3, 1)
+        self.relu3 = nn.ReLU()
+        self.pool3 = nn.MaxPool2d(2, 2)
                 
         self.global_pool = nn.AdaptiveAvgPool2d((1,1))
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(64, 32)
+        self.fc1 = nn.Linear(256, 128)
         self.relu1 = nn.ReLU()
-        self.fc2 = nn.Linear(32, 16)
+        self.fc2 = nn.Linear(128, 64)
         self.relu2 = nn.ReLU()
-        self.fc3 = nn.Linear(16, num_classes)
+        self.fc3 = nn.Linear(64, num_classes)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # YOUR CODE HERE: process the input tensor through the
         # feature extractor, the pooling and the final linear
         # layers (if appropriate for the architecture chosen)
-        x = self.convblock1(x)
-        x = self.convblock2(x)
-        x = self.convblock3(x)
+        
 
         x = self.global_pool(x)
         x = self.flatten(x)
