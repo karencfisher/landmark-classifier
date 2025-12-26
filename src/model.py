@@ -46,7 +46,7 @@ class MyModel(nn.Module):
         x = self.convblock3(x)
 
         x = self.global_pool(x)
-        x = self.flatten(x, 1)
+        x = self.flatten(x)
         x = self.relu1(self.fc1(x))
         x = self.relu2(self.fc2(x))
         return self.fc3(x)
