@@ -130,7 +130,7 @@ def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, schedule
 
         # Update learning rate, i.e., make a step in the learning rate scheduler
         if scheduler is not None:
-            if isinstance(ReduceLROnPlateau, scheduler):
+            if isinstance(scheduler, ReduceLROnPlateau):
                 scheduler.step(valid_loss)
             else:
                 scheduler.step()
