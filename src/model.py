@@ -12,34 +12,36 @@ class MyModel(nn.Module):
 
         self.conv1 = nn.Conv2d(3, 16, 3, 1)
         self.relu1 = nn.ReLU()
-        self.pool1 = nn.MaxPool2d(2, 2) #111
+        self.pool1 = nn.MaxPool2d(2, 2)  # 111
         self.conv2 = nn.Conv2d(16, 32, 3, 1)
         self.relu2 = nn.ReLU()
-        self.pool2 = nn.MaxPool2d(2, 2) #49
+        self.pool2 = nn.MaxPool2d(2, 2)  # 49
         self.conv3 = nn.Conv2d(32, 64, 3, 1)
         self.relu3 = nn.ReLU()
-        self.pool3 = nn.MaxPool2d(2, 2) #23
-                
-        self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(43264, 1024)
-        self.relu1 = nn.ReLU()
-        self.fc2 = nn.Linear(1024, 512)
-        self.relu2 = nn.ReLU()
-        self.fc3 = nn.Linear(512, num_classes)
+        self.pool3 = nn.MaxPool2d(2, 2)  # 23
+
+        # Global Average Pooling
+        self.gap = nn.AdaptiveAvgPool2d((1, 1))
+
+        # Fully connected layers
+        self.fc1 = nn.Linear(64, 512)  # Input size matches the number of channels after GAP
+        self.relu4 = nn.ReLU()
+        self.dropout = nn.Dropout(dropout)
+        self.fc2 = nn.Linear(512, num_classes)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # YOUR CODE HERE: process the input tensor through the
-        # feature extractor, the pooling and the final linear
-        # layers (if appropriate for the architecture chosen)
         x = self.pool1(self.relu1(self.conv1(x)))
         x = self.pool2(self.relu2(self.conv2(x)))
         x = self.pool3(self.relu3(self.conv3(x)))
-        
-        x = self.flatten(x)
-        x = self.relu1(self.fc1(x))
-        x = self.relu2(self.fc2(x))
-        return self.fc3(x)
 
+        # Apply GAP
+        x = self.gap(x)
+        x = torch.flatten(x, 1)  # Flatten to (batch_size, num_channels)
+
+        # Fully connected layers
+        x = self.relu4(self.fc1(x))
+        x = self.dropout(x)
+        return self.fc2(x)
 
 ######################################################################################
 #                                     TESTS

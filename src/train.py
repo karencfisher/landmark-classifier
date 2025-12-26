@@ -117,6 +117,8 @@ def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, interact
     # https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate
     scheduler  = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
+    train_losses = []
+    valid_losses = []
     for epoch in range(1, n_epochs + 1):
 
         train_loss = train_one_epoch(
@@ -154,6 +156,10 @@ def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, interact
 
             liveloss.update(logs)
             liveloss.send()
+            
+        train_losses.append(train_loss)
+        valid_losses.append(valid_loss)
+    return train_losses, valid_losses
 
 
 def one_epoch_test(test_dataloader, model, loss):
