@@ -66,9 +66,9 @@ def get_data_loaders(
         "train": transforms.Compose(
             [
                 resize_transform,
-                transforms.RandomResizedCrop(224),
+                transforms.CenterCrop(224),
+                # transforms.RandomResizedCrop(224),
                 # transforms.ColorJitter(.2, .2, .2, .1),
-                # transforms.RandomAffine(15, (0.1, 0.1), (0.9, 1.1), 5),
                 # transforms.RandAugment(),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std)
@@ -93,45 +93,38 @@ def get_data_loaders(
     }
 
     # Create train and validation datasets
-    train_data = datasets.ImageFolder(
+    full_train_data = datasets.ImageFolder(
         base_path / "train",
         transform = data_transforms['train']
     )
-    # The validation dataset is a split from the train_one_epoch dataset, so we read
-    # from the same folder, but we apply the transforms for validation
-    valid_data = datasets.ImageFolder(
-        base_path / "train",
-        transform = data_transforms['valid']
-    )
-
-    # obtain training indices that will be used for validation
-    n_tot = len(train_data)
-    indices = torch.randperm(n_tot)
-
-    # If requested, limit the number of data points to consider
+    
     if limit > 0:
-        indices = indices[:limit]
-        n_tot = limit
+        full_train_data = torch.utils.data.RandomSampler(full_train_data, 
+                                                         num_samples=limit)
+    
+    n_total = len(full_train_data)
+    n_valid = int(math.ceil(valid_size * n_total))
+    n_train = n_total - n_valid
 
-    split = int(math.ceil(valid_size * n_tot))
-    train_idx, valid_idx = indices[split:], indices[:split]
-
-    # define samplers for obtaining training and validation batches
-    # train_sampler = torch.utils.data.SubsetRandomSampler(train_idx)
-    # valid_sampler  = torch.utils.data.SubsetRandomSampler(valid_idx)
+    train_data, valid_data = torch.utils.data.random_split(
+        full_train_data, [n_train, n_valid]
+    )
 
     # prepare data loaders
     data_loaders["train"] = torch.utils.data.DataLoader(
         train_data,
         batch_size=batch_size,
-        sampler=train_idx,
+        shuffle=True,
         num_workers=num_workers,
+        pin_memory=True
     )
+    
     data_loaders["valid"] = torch.utils.data.DataLoader(
         valid_data,
         batch_size=batch_size,
-        sampler=valid_idx,
-        num_workers=num_workers
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=True
     )
 
     # Now create the test data loader
@@ -141,16 +134,14 @@ def get_data_loaders(
     )
 
     if limit > 0:
-        indices = torch.arange(limit)
-        test_sampler = torch.utils.data.SubsetRandomSampler(indices)
-    else:
-        test_sampler = None
+        test_data = torch.utils.data.RandomSampler(test_data, num_samples=limit)
 
     data_loaders["test"] = torch.utils.data.DataLoader(
         test_data,
         batch_size=batch_size,
-        sampler=test_sampler,
-        num_workers=num_workers
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=True,
     )
 
     return data_loaders

@@ -11,10 +11,6 @@ def train_one_epoch(train_dataloader, model, optimizer, loss):
     """
     Performs one train_one_epoch epoch
     """
-
-    if torch.cuda.is_available():
-        model.cuda()
-
     model.train() 
     train_loss = 0.0
 
@@ -55,9 +51,6 @@ def valid_one_epoch(valid_dataloader, model, loss):
         # set the model to evaluation mode
         model.eval()
 
-        if torch.cuda.is_available():
-            model.cuda()
-
         valid_loss = 0.0
         for batch_idx, (data, target) in tqdm(
             enumerate(valid_dataloader),
@@ -85,6 +78,9 @@ def valid_one_epoch(valid_dataloader, model, loss):
 
 @timer
 def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, scheduler=None):
+    if torch.cuda.is_available():
+        model.cuda()
+    
     # Removed livelossplot stuff -- I won't use it
     # initialize tracker for minimum validation loss
     valid_loss_min = None
@@ -113,6 +109,13 @@ def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, schedule
                 epoch, train_loss, valid_loss
             )
         )
+        
+        # Update learning rate, i.e., make a step in the learning rate scheduler
+        if scheduler is not None:
+            if isinstance(scheduler, ReduceLROnPlateau):
+                scheduler.step(valid_loss)
+            else:
+                scheduler.step()
 
         # If the validation loss decreases by more than 1% or
         # If last epoch and valid_loss is least save the final weights
@@ -127,13 +130,6 @@ def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, schedule
             torch.save(model.state_dict(), save_path)
 
             valid_loss_min = valid_loss
-
-        # Update learning rate, i.e., make a step in the learning rate scheduler
-        if scheduler is not None:
-            if isinstance(scheduler, ReduceLROnPlateau):
-                scheduler.step(valid_loss)
-            else:
-                scheduler.step()
 
         # Log the losses and the current learning rate
         train_losses.append(train_loss)
@@ -225,6 +221,7 @@ def test_train_one_epoch(data_loaders, optim_objects):
 
 
 def test_valid_one_epoch(data_loaders, optim_objects):
+    
 
     model, loss, optimizer = optim_objects
 
