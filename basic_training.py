@@ -1,4 +1,5 @@
 import torch
+from tqdm import tqdm
 
 def train(model, device, optimizer, data_loader, criterion):
     model.to(device)
@@ -11,7 +12,7 @@ def train(model, device, optimizer, data_loader, criterion):
 
         model.train()  # always start epoch in training mode
 
-        for images, labels in data_loader:  # your DataLoader
+        for images, labels in tqdm(data_loader, desc=f'epoch {epoch+1}/{num_epochs}'):
             images = images.to(device)
             labels = labels.to(device)
         
