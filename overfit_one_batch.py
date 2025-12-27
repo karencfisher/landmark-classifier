@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 
 def one_batch_train(model, data_loader, device):
+    model.to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=0.05)
     criterion = nn.CrossEntropyLoss()
 
