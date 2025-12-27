@@ -67,9 +67,8 @@ def get_data_loaders(
             [
                 resize_transform,
                 transforms.RandomResizedCrop(224),
-                # transforms.ColorJitter(.2, .2, .2, .1),
-                # transforms.RandomAffine(15, (0.1, 0.1), (0.9, 1.1), 5),
-                # transforms.RandAugment(),
+                transforms.ColorJitter(.2, .2, .1),
+                transforms.RandAugment(),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std)
             ]
