@@ -11,6 +11,9 @@ def train_one_epoch(train_dataloader, model, optimizer, loss):
     """
     Performs one train_one_epoch epoch
     """
+    if torch.cuda.is_available():
+        model.cuda()
+        
     model.train() 
     train_loss = 0.0
 
