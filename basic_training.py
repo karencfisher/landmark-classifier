@@ -12,6 +12,9 @@ def train(model, device, optimizer, data_loader, criterion):
         model.train()  # always start epoch in training mode
 
         for images, labels in data_loader:  # your DataLoader
+            images = images.to(device)
+            labels = labels.to(device)
+        
             optimizer.zero_grad()
             outputs = model(images)
             loss = criterion(outputs, labels)
