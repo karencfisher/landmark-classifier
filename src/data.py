@@ -116,21 +116,17 @@ def get_data_loaders(
     split = int(math.ceil(valid_size * n_tot))
     train_idx, valid_idx = indices[split:], indices[:split]
 
-    # define samplers for obtaining training and validation batches
-    train_sampler = torch.utils.data.SubsetRandomSampler(train_idx)
-    valid_sampler  = torch.utils.data.SubsetRandomSampler(valid_idx)
-
     # prepare data loaders
     data_loaders["train"] = torch.utils.data.DataLoader(
         train_data,
         batch_size=batch_size,
-        sampler=train_sampler,
+        sampler=train_idx,
         num_workers=num_workers,
     )
     data_loaders["valid"] = torch.utils.data.DataLoader(
         valid_data,
         batch_size=batch_size,
-        sampler=valid_sampler,
+        sampler=valid_idx,
         num_workers=num_workers
     )
 

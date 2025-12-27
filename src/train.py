@@ -11,9 +11,6 @@ def train_one_epoch(train_dataloader, model, optimizer, loss):
     """
     Performs one train_one_epoch epoch
     """
-    if torch.cuda.is_available():
-        model.cuda()
-        
     model.train() 
     train_loss = 0.0
 
@@ -53,9 +50,6 @@ def valid_one_epoch(valid_dataloader, model, loss):
         # set the model to evaluation mode
         model.eval()
         
-        if torch.cuda.is_available():
-            model.cuda()
-
         valid_loss = 0.0
         for batch_idx, (data, target) in tqdm(
             enumerate(valid_dataloader),
@@ -83,8 +77,8 @@ def valid_one_epoch(valid_dataloader, model, loss):
 
 @timer
 def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, scheduler=None):
-    # if torch.cuda.is_available():
-    #     model.cuda()
+    if torch.cuda.is_available():
+        model.cuda()
     
     # Removed livelossplot stuff -- I won't use it
     # initialize tracker for minimum validation loss
