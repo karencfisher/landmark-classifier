@@ -7,42 +7,50 @@ import torch.nn as nn
    
         
 class MyModel(nn.Module):
-    def __init__(self, num_classes: int = 1000, dropout: float = 0.7) -> None:
+    def __init__(self, num_classes: int, dropout: float=0.5) -> None:
         super().__init__()
 
-        self.conv1 = nn.Conv2d(3, 16, 3, 1)
-        self.relu1 = nn.ReLU()
-        self.pool1 = nn.MaxPool2d(2, 2) 
-        self.conv2 = nn.Conv2d(16, 32, 3, 1)
-        self.relu2 = nn.ReLU()
-        self.pool2 = nn.MaxPool2d(2, 2) 
-        self.conv3 = nn.Conv2d(32, 64, 3, 1)
-        self.relu3 = nn.ReLU()
-        self.pool3 = nn.MaxPool2d(2, 2) 
-        self.conv4 = nn.Conv2d(64, 64, 3, 1)
-        self.relu4 = nn.ReLU()
-        self.pool4 = nn.MaxPool2d(2, 2) 
-                
-        self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(9216, 1024)
-        self.relu1 = nn.ReLU()
-        self.fc2 = nn.Linear(1024, 512)
-        self.relu2 = nn.ReLU()
-        self.fc3 = nn.Linear(512, num_classes)
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 16, 7, padding=3),
+            nn.BatchNorm2d(16),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+
+            nn.Conv2d(16, 32, 3, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+
+            nn.Conv2d(32, 64, 3, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+
+            nn.Conv2d(64, 128, 3, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+
+            nn.AdaptiveAvgPool2d((4,4))
+        )
+
+        self.classifier = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(128 * 4 * 4, 128),
+            nn.ReLU(),
+
+            nn.Dropout(dropout),
+
+            nn.Linear(128, 64),
+            nn.ReLU(),
+
+            nn.Linear(64, num_classes)
+        )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # YOUR CODE HERE: process the input tensor through the
-        # feature extractor, the pooling and the final linear
-        # layers (if appropriate for the architecture chosen)
-        x = self.pool1(self.relu1(self.conv1(x)))
-        x = self.pool2(self.relu2(self.conv2(x)))
-        x = self.pool3(self.relu3(self.conv3(x)))
-        x = self.pool4(self.relu3(self.conv4(x)))
-        
-        x = self.flatten(x)
-        x = self.relu1(self.fc1(x))
-        x = self.relu2(self.fc2(x))
-        return self.fc3(x)
+        x = self.features(x)
+        x = self.classifier(x)
+        return x
 
 
 ######################################################################################
