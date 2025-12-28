@@ -51,6 +51,8 @@ def valid_one_epoch(valid_dataloader, model, loss):
         model.eval()
         
         valid_loss = 0.0
+        correct = 0
+        total = 0
         for batch_idx, (data, target) in tqdm(
             enumerate(valid_dataloader),
             desc="Validating",
@@ -72,7 +74,14 @@ def valid_one_epoch(valid_dataloader, model, loss):
                 (1 / (batch_idx + 1)) * (loss_value.data.item() - valid_loss)
             )
             
-    return valid_loss
+            # convert logits to predicted class
+            pred = output.data.max(1, keepdim=True)[1]
+
+            # compare predictions to true label
+            correct += torch.sum(torch.squeeze(pred.eq(target.data.view_as(pred))).cpu())
+            total += data.size(0)
+            
+    return valid_loss, correct / total
 
 
 @timer
@@ -94,18 +103,19 @@ def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, schedule
 
     train_losses = []
     valid_losses = []
+    valid_accuracies = []
     for epoch in range(1, n_epochs + 1):
 
         train_loss = train_one_epoch(
             data_loaders["train"], model, optimizer, loss
         )
 
-        valid_loss = valid_one_epoch(data_loaders["valid"], model, loss)
+        valid_loss, valid_accuracy = valid_one_epoch(data_loaders["valid"], model, loss)
 
         # print training/validation statistics
         print(
-            "\nEpoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}".format(
-                epoch, train_loss, valid_loss
+            "\nEpoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f} \tValidation Accuracy: {:.2f}%".format(
+                epoch, train_loss, valid_loss, valid_accuracy * 100
             )
         )
         
@@ -133,7 +143,8 @@ def optimize(data_loaders, model, optimizer, loss, n_epochs, save_path, schedule
         # Log the losses and the current learning rate
         train_losses.append(train_loss)
         valid_losses.append(valid_loss)
-    return train_losses, valid_losses
+        valid_accuracies.append(valid_accuracy)
+    return train_losses, valid_losses, valid_accuracies
 
 
 def one_epoch_test(test_dataloader, model, loss):
@@ -224,8 +235,9 @@ def test_valid_one_epoch(data_loaders, optim_objects):
     model, loss, optimizer = optim_objects
 
     for _ in range(2):
-        lv = valid_one_epoch(data_loaders["valid"], model, loss)
+        lv, acc = valid_one_epoch(data_loaders["valid"], model, loss)
         assert not np.isnan(lv), "Validation loss is nan"
+        assert not np.isnan(acc), "Validation accuracy is nan"
 
 def test_optimize(data_loaders, optim_objects):
 
