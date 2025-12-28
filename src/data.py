@@ -66,9 +66,8 @@ def get_data_loaders(
         "train": transforms.Compose(
             [
                 resize_transform,
-                transforms.RandomResizedCrop(224),
-                transforms.ColorJitter(.2, .2, .1),
-                transforms.RandAugment(),
+                transforms.RandomResizedCrop(224, scale=(0.6, 1.0), ratio=(0.75, 1.33)),
+                transforms.ColorJitter(.2, .2, .1, 0.02),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std)
             ]

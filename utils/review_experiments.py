@@ -41,7 +41,7 @@ def display_details(df, id):
 
     # Plot the losses
     x = range(1, len(train_losses) + 1)
-    plt.figure(figsize=(10, 5))
+    plt.figure(figsize=(5, 5))
     plt.plot(x, train_losses, label='Train Loss')
     plt.plot(x, valid_losses, label='Valid Loss')
     plt.xlabel('Epoch')
