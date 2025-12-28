@@ -10,7 +10,7 @@ def one_batch_train(model, data_loader, device):
     images, labels = next(iter(data_loader))
     images, labels = images.to(device), labels.to(device)
 
-    for step in range(200):
+    for step in range(201):
         optimizer.zero_grad()
         outputs = model(images)
         loss = criterion(outputs, labels)
