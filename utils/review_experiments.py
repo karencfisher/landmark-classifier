@@ -27,7 +27,7 @@ def display_details(df, id):
         return
     
     df_selected = df[df['id'] == id].T
-    df_selected.rename(columns={0: 'Value'}, inplace=True)
+    df_selected.columns = ['value']
 
     train_losses_str = df_selected.loc['train_losses'].values[0]
     valid_losses_str = df_selected.loc['valid_losses'].values[0]
