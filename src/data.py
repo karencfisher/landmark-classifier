@@ -53,16 +53,11 @@ def get_data_loaders(
                     256, 
                     interpolation=transforms.InterpolationMode.BILINEAR
                 ),
-                transforms.RandomResizedCrop(
-                    224, 
-                    scale=(0.7, 1.0), 
-                    ratio=(0.9, 1.1),  
-                    interpolation=transforms.InterpolationMode.BILINEAR,
-                ),
+                transforms.RandomCrop(224),
                 transforms.ColorJitter(
-                    brightness=0.2, 
-                    contrast=0.2, 
-                    saturation=.08
+                    brightness=0.1, 
+                    contrast=0.1, 
+                    saturation=.05
                 ),
                 transforms.RandomApply(
                     [
@@ -70,7 +65,7 @@ def get_data_loaders(
                         3, 
                         sigma=(0.1, 1.0))
                     ], 
-                    p=0.15
+                    p=0.10
                 ),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std)

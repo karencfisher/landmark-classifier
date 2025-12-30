@@ -10,6 +10,7 @@ def load_display_data():
 
     # Horizontal bar plot of accuracies, sorted by accuracy descending
     df_sorted = df.sort_values('Accuracy', ascending=True)
+    conn.close()
     
     plt.figure(figsize=(10, max(2, len(df_sorted) * 0.8)))  # Adjust height for better visibility
     df_sorted['Accuracy'].plot(kind='barh')
