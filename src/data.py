@@ -49,7 +49,7 @@ def get_data_loaders(
     data_transforms = {
         "train": transforms.Compose(
             [
-                transforms.resize(
+                transforms.Resize(
                     256, 
                     interpolation=transforms.InterpolationMode.BILINEAR
                 ),
@@ -78,7 +78,7 @@ def get_data_loaders(
         ),
         "valid": transforms.Compose(
             [
-                transforms.resize(
+                transforms.Resize(
                     256, 
                     interpolation=transforms.InterpolationMode.BILINEAR
                 ),
@@ -89,7 +89,7 @@ def get_data_loaders(
         ),
         "test": transforms.Compose(
             [
-                transforms.resize(
+                transforms.Resize(
                     256, 
                     interpolation=transforms.InterpolationMode.BILINEAR
                 ),
