@@ -9,6 +9,19 @@ from .helpers import compute_mean_and_std, get_data_location
 import matplotlib.pyplot as plt
 
 
+class ResizeBySmallest:
+    """Resize image to 256 on shortest dimension to retain aspect ratio"""
+    def __call__(self, image):
+        w, h = image.size
+        if w < h:
+            new_w = 256
+            new_h = int(h * (256 / w))
+        else:
+            new_h = 256
+            new_w = int(w * (256 / h))
+        return image.resize((new_w, new_h))
+
+
 def get_data_loaders(
     batch_size: int = 32, valid_size: float = 0.2, num_workers: int = -1, limit: int = -1
 ):
@@ -46,37 +59,23 @@ def get_data_loaders(
     # HINT: resize the image to 256 first, then crop them to 224, then add the
     # appropriate transforms for that step
     
+    # This is to reduce to 256 on shortest dimension to retain aspect ratio
+    resize_transform = ResizeBySmallest()
+    
     data_transforms = {
         "train": transforms.Compose(
             [
-                transforms.Resize(
-                    256, 
-                    interpolation=transforms.InterpolationMode.BILINEAR
-                ),
-                transforms.RandomCrop(224),
-                transforms.ColorJitter(
-                    brightness=0.1, 
-                    contrast=0.1, 
-                    saturation=.05
-                ),
-                transforms.RandomApply(
-                    [
-                        transforms.GaussianBlur(
-                        3, 
-                        sigma=(0.1, 1.0))
-                    ], 
-                    p=0.10
-                ),
+                resize_transform,
+                transforms.RandomResizedCrop(224),
+                transforms.ColorJitter(.2, .2, .1),
+                transforms.RandAugment(),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std)
             ]
         ),
         "valid": transforms.Compose(
             [
-                transforms.Resize(
-                    256, 
-                    interpolation=transforms.InterpolationMode.BILINEAR
-                ),
+                resize_transform,
                 transforms.CenterCrop(224),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std)
@@ -84,10 +83,7 @@ def get_data_loaders(
         ),
         "test": transforms.Compose(
             [
-                transforms.Resize(
-                    256, 
-                    interpolation=transforms.InterpolationMode.BILINEAR
-                ),
+                resize_transform,
                 transforms.CenterCrop(224),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std)

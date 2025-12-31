@@ -7,7 +7,7 @@ def get_loss():
     """
     Returns the loss function for the model.
     """
-    return nn.CrossEntropyLoss()
+    return nn.CrossEntropyLoss(label_smoothing=0.1)
 
 
 def get_optimizer(

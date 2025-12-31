@@ -213,7 +213,7 @@ def data_loaders():
 
 @pytest.fixture(scope="session")
 def optim_objects():
-    from src.optimization import get_optimizer, get_loss
+    from .optimization import get_optimizer, get_loss
     from src.model import MyModel
 
     model = MyModel(50)
